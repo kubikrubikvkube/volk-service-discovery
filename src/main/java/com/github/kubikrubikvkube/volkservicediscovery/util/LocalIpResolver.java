@@ -2,7 +2,9 @@ package com.github.kubikrubikvkube.volkservicediscovery.util;
 
 import com.github.kubikrubikvkube.volkservicediscovery.exception.ConfigurationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 import java.net.Inet4Address;
@@ -16,9 +18,18 @@ import java.net.UnknownHostException;
 @Component
 public class LocalIpResolver {
 
+    @Value("${localhost.static.ip}")
+    private String localhostStaticIp;
+
     public Mono<InetAddress> resolve() {
-        InetAddress resolvedAddress;
         try {
+            if (!ObjectUtils.isEmpty(localhostStaticIp)) {
+                log.debug("Localhost has predefined static IP: {}", localhostStaticIp);
+                return resolveLocalhostStaticIp();
+            }
+
+            log.debug("Localhost doesn't have predefined static IP.");
+            InetAddress resolvedAddress;
             var byteAddress = InetAddress.getLocalHost().getAddress();
             resolvedAddress = Inet4Address.getByAddress(byteAddress);
             log.debug("Resolved own ip address as: {}", resolvedAddress);
@@ -26,5 +37,11 @@ public class LocalIpResolver {
         } catch (UnknownHostException e) {
             throw new ConfigurationException("Can't resolve own ip address");
         }
+    }
+
+    private Mono<InetAddress> resolveLocalhostStaticIp() throws UnknownHostException {
+        InetAddress inetAddress = Inet4Address.getByName(localhostStaticIp);
+        log.debug("Resolved own static ip address as: {}", inetAddress);
+        return Mono.justOrEmpty(inetAddress);
     }
 }
