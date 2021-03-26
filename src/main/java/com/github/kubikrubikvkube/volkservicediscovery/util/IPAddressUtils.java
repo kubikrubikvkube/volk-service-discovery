@@ -16,9 +16,16 @@ import java.util.function.Function;
 @Component
 public class IPAddressUtils {
 
+    /**
+     * Timeout when testing if host is reachable
+     */
     @Value("${discovery.timeout.isReachable.ms}")
     private int isReachableTimeout;
 
+    /**
+     * Clears last octet.
+     * For example: 192.168.1.105 becomes 192.168.1.0
+     */
     public String clearLastOctet(String hostAddress) {
         String dot = "\\.";
         String[] split = hostAddress.split(dot);
@@ -31,7 +38,9 @@ public class IPAddressUtils {
         return null;
     }
 
-
+    /**
+     * Tests if {@link IPAddress} is reachable within {@link IPAddressUtils#isReachableTimeout}
+     */
     public boolean isReachable(IPAddress ipAddress) {
         String ip = ipAddress.toInetAddress().getHostAddress();
         try {

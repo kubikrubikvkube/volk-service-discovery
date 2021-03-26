@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.InetAddress;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -20,7 +21,7 @@ public class VolkServiceDiscoveryController {
     private final IPAddressUtils ipAddressUtils;
 
     @GetMapping("/info")
-    public Mono<Long> get() {
+    public Mono<List<String>> get() {
         return localIpResolver.resolve()
                 .map(InetAddress::getHostAddress)
                 .doOnNext(ip -> log.info("VOLK service discovery localhost IP resolved as '{}'", ip))
@@ -29,7 +30,8 @@ public class VolkServiceDiscoveryController {
                 .map(ipAddressUtils.convertIPAddressStringToIPAddress())
                 .flatMapMany(ipAddress -> Flux.fromStream(ipAddress.stream()))
                 .filter(ipAddressUtils::isReachable)
+                .map(ipAddress -> ipAddress.toInetAddress().getHostAddress())
                 .doOnNext(e -> log.info("Reachable host: {}", e))
-                .count();
+                .collectList();
     }
 }

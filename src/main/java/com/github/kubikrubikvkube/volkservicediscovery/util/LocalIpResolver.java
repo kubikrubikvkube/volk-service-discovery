@@ -4,12 +4,13 @@ import com.github.kubikrubikvkube.volkservicediscovery.exception.ConfigurationEx
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Mono;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * A component to resolve current IP address of available network interface
@@ -23,8 +24,8 @@ public class LocalIpResolver {
 
     public Mono<InetAddress> resolve() {
         try {
-            if (!ObjectUtils.isEmpty(localhostStaticIp)) {
-                log.debug("Localhost has predefined static IP: {}", localhostStaticIp);
+            if (isNotBlank(localhostStaticIp)) {
+                log.info("Localhost has predefined static IP: {}", localhostStaticIp);
                 return resolveLocalhostStaticIp();
             }
 
